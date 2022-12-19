@@ -1,0 +1,77 @@
+
+
+attach(adult21)
+
+region <- as.factor(REGION)
+levels(region) <- c("Northeast","Midwest","South","West")
+genderf <- as.numeric(SEX_A == 2) 
+white<- as.numeric(RACEALLP_A == 1)
+black<- as.numeric(RACEALLP_A == 2)
+asian<- as.numeric(RACEALLP_A == 3)
+aian<- as.numeric(RACEALLP_A == 4)
+age <- as.numeric(AGEP_A)
+seperated <- as.numeric((LEGMSTAT_A == 1)) 
+divorced <- as.numeric((LEGMSTAT_A == 2))
+married <- as.numeric((LEGMSTAT_A == 3)) 
+single <- as.numeric((LEGMSTAT_A == 4)) 
+widowed <- as.numeric((LEGMSTAT_A == 5)) 
+health <- as.factor(PHSTAT_A)
+levels(health) <- c("Excellent","Very good", "Good", "Fair", "Poor", "Refused", "Not Ascertained", "Don't know")
+medicaid <- as.numeric(COVER_A == 2) 
+private <- as.numeric(COVER_A == 1) 
+
+
+educ_nohs <- as.numeric((EDUCP_A == 00) | (EDUCP_A == 01) | (EDUCP_A == 02))
+
+educ_hs <- as.numeric((EDUCP_A == 03) | (EDUCP_A == 04)) 
+educ_smcoll <- as.numeric(EDUCP_A == 05)
+educ_as <- as.numeric((EDUCP_A == 06) | (EDUCP_A == 07))
+educ_bach <- as.numeric(EDUCP_A == 08)
+educ_adv <- as.numeric((EDUCP_A == 09) | (EDUCP_A == 10))
+veteran <- as.numeric(AFVET_A == 1)
+worklastweek <- as.numeric(EMPWRKLSW1_A == 1)
+fulltime<- as.numeric(EMPWRKFT1_A == 1)
+parttime<- as.numeric(EMPWRKFT1_A == 2)
+
+injury <- as.numeric (ANYINJURY_A == 1)
+
+paidleave<- as.numeric (EMPSICKLV_A ==1)
+missed<- as.numeric (INJWRKDYTC_A == 10)
+ER <- as.numeric (INJER_A == 1)
+doctorvisit <- as.numeric (LASTDR_A == 1)
+medcare <- as.numeric (MEDDL12M_A == 1)
+
+somepain <- as.numeric (PAIWKLM3M_A == 2) 
+arth <- as.numeric (ARTHEV_A == 1)
+payworry <- as.numeric (PAYWORRY_A == 2)
+problembill<- as.numeric (PAYBLL12M_A == 1)
+backpain <- as.numeric (PAIBACK3M_A ==2)
+hipspain <- as.numeric (PAILLMB3M_A == 2)
+handpain <- as.numeric (PAIULMB3M_A ==2)
+abdominalpain <- as.numeric (PAIAPG3M_A == 2)
+toothpain <- as.numeric (PAITOOTH3M_A ==2)
+rinjury <- as.numeric (REPFUTWRK_A == 1)
+stopwork <- as.numeric (INJREDUCE_A ==1)
+reducework<- as.numeric (INJREDUCE_A == 1)
+foodworker<- as.numeric (EMDINDSTN1_A == 41)
+
+uninsured<- as.numeric (COVER_A == 4)
+Agriculture	<- as.numeric (EMDINDSTN2_A ==01) 
+Construction<- as.numeric (EMDINDSTN2_A == 04)
+Healthcare<- as.numeric (EMDINDSTN2_A ==16)
+Manufacturing	<- as.numeric (EMDINDSTN2_A ==05)
+Mining<- as.numeric (EMDINDSTN2_A ==02)
+Services<- as.numeric (EMDINDSTN2_A ==19)
+Transportation<- as.numeric (EMDINDSTN2_A ==08)
+Wholesale <- as.numeric (EMDINDSTN2_A ==06)
+Retail<- as.numeric (EMDINDSTN2_A ==07)
+data_use21 <- data.frame(uninsured,Retail, Agriculture,Construction, Healthcare, Manufacturing, Mining, Services, Transportation, Wholesale, foodworker,stopwork,reducework, region, doctorvisit, genderf, white, rinjury, black, asian, aian, age, payworry, problembill, backpain,abdominalpain, hipspain, handpain, toothpain, seperated, divorced, married, single, widowed, health, medicaid, private, educ_nohs, educ_hs, educ_smcoll, educ_as, educ_bach, educ_adv, veteran, worklastweek, fulltime, injury, paidleave, missed, ER, medcare, somepain, arth)
+detach()
+save(data_use21, file = "NHIS21 CLEANED.RData")
+load("NHIS21 CLEANED.RData")
+
+write.table(data_use21, file = "NHIS21 CLEANED.R", sep = "\t",
+            row.names = TRUE, col.names = NA)
+write.csv(data_use21, file = "NHIS21 CLEANED.R.csv")
+
+

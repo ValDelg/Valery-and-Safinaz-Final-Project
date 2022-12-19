@@ -1,0 +1,373 @@
+---
+title: "Valery Delgado and Safinaz Ali Final Project"
+output:
+  word_document: default
+date: "2022-12-18"
+---
+
+``` {r}
+suppressMessages(library(stargazer))
+suppressMessages(library(coefplot))
+suppressMessages(library(AER))
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(scales))
+suppressMessages(library(plyr))
+suppressMessages(library(table1))
+suppressMessages(library(coefplot))
+suppressMessages(library(readr))
+
+#cleaned data
+library(readr)
+suppressMessages(NHIS21_CLEANED_R <- read_csv("NHIS21 CLEANED.R.csv"))
+suppressMessages(attach(NHIS21_CLEANED_R))
+use_varb <- (age >=18) & (age <84) & (fulltime == 1) 
+#work 35+ hours, 18-84 years
+data_use <- subset(NHIS21_CLEANED_R,use_varb) 
+#The analytic sample included 13,256 adults ages 18–85 with an employment status of working 35 hours looking at injury 
+attach(data_use)
+```
+
+``` {r}
+table1(~genderf + age+ white+ black+ asian+ aian+ medicaid + private+ uninsured+ single + married + divorced +educ_bach +educ_nohs + educ_hs + educ_as + educ_smcoll + educ_adv + injury +health+ Construction+ Retail+ Agriculture+Healthcare+Manufacturing+ Services+Transportation+Wholesale+ Mining, data = data_use)
+
+ddply(NHIS21_CLEANED_R, .(health), summarize, tmean = mean(injury), tsd = sd(injury), n_obs = length(injury))
+xtabs(~health+injury)
+```
+
+``` {r}
+model_temp1 <- glm(paidleave ~ genderf + age+ I(age^2)+ white+black+asian+aian+medicaid + private+ uninsured+ single + married+divorced  +educ_bach+educ_as+educ_adv+ injury +health+Healthcare +Construction+Mining+Agriculture+Manufacturing+Services+Transportation+Wholesale+Retail, family = binomial, data = data_use)
+summary(model_temp1)
+suppressMessages(require(AER))
+NNobs <- length(paidleave)
+set.seed(12345) 
+graph_obs <-(runif(NNobs) < 0.5) 
+dat_graph <-subset(data_use,graph_obs)  
+plot(paidleave ~ jitter(age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(-10,10), data = dat_graph)
+to_be_predicted1 <- data.frame(age = 18:84,genderf =1,white=1,black=0,aian=0,asian=0, medicaid=0, private=1, uninsured=0, single=0, married=1,divorced=0,educ_as=0, educ_bach=1,educ_adv=0, injury=1, health="Excellent",Healthcare=1,Construction=1,Mining=0,Agriculture=0,Manufacturing=1,Services=0,Transportation=0,Wholesale=0,Retail=1)
+to_be_predicted1$yhat <- predict(model_temp1, newdata = to_be_predicted1)
+lines(yhat ~ age, data = to_be_predicted1, col = "brown")
+summary(to_be_predicted1$yhat)
+coefplot(model_temp1, innerCI = 1, outerCI = 0, intercept = FALSE, title = "Coefficient Estimates of Paidleave ",
+         ylab = "Independent Variables", xlab = "Likelyhood of receiving Paid Sick leave", decreasing = TRUE)
+```
+
+``` {r}
+model_temp2 <- glm(problembill ~ genderf + age+I(age^2)+ white+black+asian+aian+medicaid + private+ uninsured+ single + married+divorced  +educ_bach+educ_as+educ_adv+ injury +health+Healthcare +Construction+Mining+Agriculture+Manufacturing+Services+Transportation+Wholesale+Retail, family = binomial, data = data_use)
+summary(model_temp2)
+suppressMessages(require(AER))
+NNobs <- length(problembill)
+set.seed(12345) 
+graph_obs <- (runif(NNobs) < 0.5) 
+dat_graph <-subset(data_use,graph_obs)  
+plot(problembill ~ jitter(age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(-7,7), data = dat_graph)
+to_be_predicted2 <- data.frame(age = 18:84,genderf =1,white=1,black=0,aian=0,asian=0, medicaid=0, private=1, uninsured=0, single=0, married=1,divorced=0,educ_as=0, educ_bach=1,educ_adv=0, injury=1, health="Excellent",Healthcare=1,Construction=1,Mining=0,Agriculture=0,Manufacturing=1,Services=0,Transportation=0,Wholesale=0,Retail=1)
+to_be_predicted2$yhat <- predict(model_temp2, newdata = to_be_predicted2)
+lines(yhat ~ age, data = to_be_predicted2, col = "brown")
+summary(to_be_predicted2$yhat)
+coefplot(model_temp2, innerCI = 1, outerCI = 0, intercept = FALSE, title = "Coefficient Estimates of Problem Paying Bill ",
+         ylab = "Independent Variables", xlab = "Likelyhood of not being able to Pay your Medical Bill", decreasing = TRUE)
+suppressMessages(require(stargazer))
+suppressWarnings(stargazer(model_temp1,model_temp2, type = "text"))
+```
+
+
+
+
+``` {r}
+model_temp3 <- glm(doctorvisit ~ genderf + age+I(age^2)+white+black+asian+aian+medicaid + private+ uninsured+ single + married+divorced  +educ_bach+educ_as+educ_adv+ injury +health+Healthcare +Construction+Mining+Agriculture+Manufacturing+Services+Transportation+Wholesale+Retail, family = binomial, data = data_use)
+summary(model_temp3)
+suppressMessages(require(AER))
+NNobs <- length(doctorvisit)
+set.seed(12345) 
+graph_obs <- (runif(NNobs) < 0.5) 
+dat_graph <-subset(data_use,graph_obs)  
+plot(doctorvisit ~ jitter(age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(-5,5), data = dat_graph)
+to_be_predicted3 <- data.frame(age = 18:84,genderf =1,white=1,black=0,aian=0,asian=0, medicaid=0, private=1, uninsured=0, single=0, married=1,divorced=0,educ_as=0, educ_bach=1,educ_adv=0, injury=1, health="Excellent",Healthcare=1,Construction=1,Mining=0,Agriculture=0,Manufacturing=1,Services=0,Transportation=0,Wholesale=0,Retail=1)
+to_be_predicted3$yhat <- predict(model_temp3, newdata = to_be_predicted3)
+lines(yhat ~ age, data = to_be_predicted3, col = "brown")
+summary(to_be_predicted3$yhat)
+coefplot(model_temp3, innerCI = 1, outerCI = 0, intercept = FALSE, title = "Coefficient Estimates of Doctor Visits ",
+         ylab = "Independent Variables", xlab = "Likelyhood of visiting doctor in the past year", decreasing = TRUE)
+
+```
+
+
+``` {r}
+model_temp4 <- glm(medcare ~ genderf + age+ I(age^2)+ white+black+asian+aian+medicaid + private+ uninsured+ single + married+divorced  +educ_bach+educ_as+educ_adv+ injury +health+Healthcare +Construction+Mining+Agriculture+Manufacturing+Services+Transportation+Wholesale+Retail, family = binomial, data = data_use)
+summary(model_temp4)
+suppressMessages(require(AER))
+NNobs <- length(medcare)
+set.seed(12345) 
+graph_obs <- (runif(NNobs) < 0.5) 
+dat_graph <-subset(data_use,graph_obs)  
+plot(medcare ~ jitter(age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(-5,5), data = dat_graph)
+to_be_predicted4 <- data.frame(age = 18:84,genderf =1,white=1,black=0,aian=0,asian=0, medicaid=0, private=1, uninsured=0, single=0, married=1,divorced=0,educ_as=0, educ_bach=1,educ_adv=0, injury=1, health="Excellent",Healthcare=1,Construction=1,Mining=0,Agriculture=0,Manufacturing=1,Services=0,Transportation=0,Wholesale=0,Retail=1)
+to_be_predicted4$yhat <- predict(model_temp4, newdata = to_be_predicted4)
+lines(yhat ~ age, data = to_be_predicted4, col = "brown")
+summary(to_be_predicted4$yhat)
+coefplot(model_temp4, innerCI = 1, outerCI = 0, intercept = FALSE, title = " Coefficient Estimates of Medcare(Medical CARE) ",
+         ylab = "Independent Variables", xlab = "Likelyhood of delaying Medical Care", decreasing = TRUE)
+
+suppressMessages(require(stargazer))
+suppressWarnings(stargazer(model_temp3,model_temp4, type = "text"))
+```
+
+
+``` {r}
+model_temp5 <- glm(somepain ~ genderf + age+I(age^2)+  white+black+asian+aian+medicaid + private+ uninsured+ single + married+divorced  +educ_bach+educ_as+educ_adv+ injury +health+Healthcare +Construction+Mining+Agriculture+Manufacturing+Services+Transportation+Wholesale+Retail, family = binomial, data = data_use)
+summary(model_temp5)
+suppressMessages(require(AER))
+NNobs <- length(somepain)
+set.seed(12345) 
+graph_obs <- (runif(NNobs) < 0.5) 
+dat_graph <-subset(data_use,graph_obs)  
+plot(somepain ~ jitter(age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(-5,5), data = dat_graph)
+to_be_predicted5 <- data.frame(age = 18:84,genderf =1,white=1,black=0,aian=0,asian=0, medicaid=0, private=1, uninsured=0, single=0, married=1,divorced=0,educ_as=0, educ_bach=1,educ_adv=0, injury=1, health="Excellent",Healthcare=1,Construction=1,Mining=0,Agriculture=0,Manufacturing=1,Services=0,Transportation=0,Wholesale=0,Retail=1)
+to_be_predicted5$yhat <- predict(model_temp5, newdata = to_be_predicted5)
+lines(yhat ~ age, data = to_be_predicted5, col = "brown")
+summary(to_be_predicted5$yhat)
+coefplot(model_temp5, innerCI = 1, outerCI = 0, intercept = FALSE, title = "Coefficient Estimates of Pain ",
+         ylab = "Independent Variables", xlab = "Likelyhood of pain limiting Work ", decreasing = TRUE)
+
+```
+
+
+
+``` {r}
+#OLS REGRESSION CLEANED DATA
+model_temp6 <- lm(arth ~ genderf + age+ I(age^2)+  white+black+asian+aian+medicaid + private+ uninsured+ single + married+divorced  +educ_bach+educ_as+educ_adv+ injury +health+Healthcare +Construction+Mining+Agriculture+Manufacturing+Services+Transportation+Wholesale+Retail, data = data_use)
+summary(model_temp6)
+suppressMessages(require(AER))
+NNobs <- length(arth)
+set.seed(12345) 
+graph_obs <- (runif(NNobs) < 0.5) 
+dat_graph <-subset(data_use,graph_obs)  
+plot(arth~ jitter(age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(-1,1), data = dat_graph)
+to_be_predicted6 <- data.frame(age = 18:84,genderf =1,white=1,black=0,aian=0,asian=0, medicaid=0, private=1, uninsured=0, single=0, married=1,divorced=0,educ_as=0, educ_bach=1,educ_adv=0, injury=1, health="Excellent",Healthcare=1,Construction=1,Mining=0,Agriculture=0,Manufacturing=1,Services=0,Transportation=0,Wholesale=0,Retail=1)
+to_be_predicted6$yhat <- predict(model_temp6, newdata = to_be_predicted6)
+lines(yhat ~ age, data = to_be_predicted6, col = "brown")
+summary(to_be_predicted6$yhat)
+coefplot(model_temp6, innerCI = 1, outerCI = 0, intercept = FALSE, title = "Coefficient Estimates of Arthritis ",
+         ylab = "Independent Variables", xlab = "Likelyhood of recieveing Arthritis ", decreasing = TRUE)
+
+
+suppressMessages(require(stargazer))
+suppressWarnings(stargazer(model_temp5,model_temp6, type = "text"))
+```
+
+
+``` {r}
+suppressMessages(attach(NHIS21_CLEANED_R))
+model_temp7 <- lm(arth ~ genderf + age+ I(age^2)+ white+ black+ asian+ aian+ medicaid + private+ single + married + divorced +educ_bach + injury +health+ Construction+ Retail+ Agriculture+Healthcare+Manufacturing+ Services+Transportation+Wholesale+ Mining, data = data_use)
+summary(model_temp7)
+
+norm_varb <- function(X_in) {
+  (X_in - min(X_in, na.rm = TRUE))/( max(X_in, na.rm = TRUE) - min(X_in, na.rm = TRUE) )
+}
+#a factor
+status<- as.factor(health)
+#added a numerical value
+pain <- norm_varb(backpain+handpain+toothpain+hipspain+arth+abdominalpain)
+#added another numerical value
+race <-norm_varb(black+white+asian+aian) 
+
+norm_pain <- norm_varb(pain)
+norm_race <- norm_varb(race)
+
+data_use_prelim <- cbind(age, I(age^2),genderf,single,married, divorced, private, medicaid, uninsured,educ_bach,injury, race, pain)
+data_use_prelim <- data.frame(data_use_prelim)
+
+good_obs_data_use <- complete.cases(data_use_prelim,status)
+data_use <- subset(data_use_prelim,good_obs_data_use)
+y_use <- subset(status,good_obs_data_use)
+status0 <- complete.cases(data_use_prelim, status)
+summary(data_use_prelim)
+
+set.seed(12345)
+NN_obs <- sum(good_obs_data_use == 1)
+select1 <- (runif(NN_obs) < 0.8)
+train_data <- subset(data_use,select1)
+test_data <- subset(data_use,(!select1))
+cl_data <- y_use[select1]
+true_data <- y_use[!select1]
+
+summary(cl_data)
+prop.table(summary(cl_data))
+summary(train_data)
+require(class)
+for (indx in seq(1,15, by= 2)) {
+  pred_status<- knn(train_data, test_data, cl_data, k = indx, l = 0, prob = FALSE, use.all = TRUE)
+  num_correct_labels <- sum(pred_status == true_data)
+  correct_rate <- num_correct_labels/length(true_data)
+  print(c(indx,correct_rate))
+}
+
+cl_data_n <- as.numeric(cl_data)
+model_ols1 <- lm(cl_data_n ~ train_data$genderf + train_data$single + train_data$married+ train_data$divorced + train_data$age + train_data$uninsured +train_data$medicaid +train_data$private+ train_data$educ_bach + train_data$injury )
+summary(model_ols1)
+y_hat <- fitted.values(model_ols1)
+
+mean(y_hat[cl_data_n == 1])
+mean(y_hat[cl_data_n == 2])
+
+ cl_data_n1 <- as.numeric(cl_data_n == 1)
+
+model_ols_v1 <- lm(cl_data_n1 ~ train_data$genderf +train_data$single + train_data$married+ train_data$divorced + train_data$age + train_data$uninsured +train_data$medicaid +train_data$private+ train_data$educ_bach + train_data$injury)
+y_hat_v1 <- fitted.values(model_ols_v1)
+mean(y_hat_v1[cl_data_n1 == 1])
+mean(y_hat_v1[cl_data_n1 == 0])
+```
+
+
+``` {r}
+library(readr)
+suppressMessages(NHIS21_CLEANED_R <- read_csv("NHIS21 CLEANED.R.csv"))
+suppressMessages(attach(NHIS21_CLEANED_R))
+use_varb <- (age >=18) & (age <84) & (fulltime == 1) 
+data_use <- subset(NHIS21_CLEANED_R,use_varb) 
+attach(data_use)
+table(data_use$health)
+pie(table(data_use$health),
+    labels = paste(round(prop.table(table(data_use$health))*100), "%", sep = ""), 
+    col = c("red", "yellow", "green", "violet", "orange", "blue", "pink", "cyan"), main = "Proportion of Healthstatus")
+legend("topright", legend = c("Excellent","Very good", "Good", "Fair", "Poor", "Refused", "Not Ascertained","Don't Know"), 
+       fill =   c("red", "yellow", "green", "violet", "orange", "blue", "pink", "cyan"), title = "Categories", cex = .7)
+
+```
+
+
+
+
+``` {r}
+data_use$industry <- factor((data_use$Agriculture	+ 2*data_use$Construction + 3*data_use$Healthcare + 4*data_use$Manufacturing + 5*data_use$Mining + 6*data_use$Services + 7*data_use$Transportation + 8*data_use$Wholesale  + 9*data_use$Retail
+), 
+levels=c(1,2,3,4,5,6,7,8,9), labels = c("Agriculture","Construction","Healthcare","Manufacturing","Mining","Services","Transportation","Wholesale","Retail"))
+table(data_use$industry)
+pie(table(data_use$industry),
+    labels = paste(round(prop.table(table(data_use$industry))*100), "%", sep = ""), 
+    col = c("red", "yellow", "green", "violet", "orange", "blue", "pink", "cyan", "white"), main = "Proportion of Industry")
+legend("topright", legend = c("Agriculture","Construction","Healthcare","Manufacturing","Mining","Services","Transportation","Wholesale","Retail"), 
+       fill =   c("red", "yellow", "green", "violet", "orange", "blue", "pink", "cyan", "white"), title = "Categories", cex = .7)
+
+```
+
+
+``` {r}
+data_use$Race <- factor((data_use$white + 2*data_use$black + 3*data_use$asian + 4*data_use$aian), 
+levels=c(1,2,3,4), labels = c("white","black","asian","aian"))
+table(data_use$Race)
+pie(table(data_use$Race),
+    labels = paste(round(prop.table(table(data_use$Race))*100), "%", sep = ""), 
+    col = c("purple", "violetred1", "cornsilk", "cyan", "white"), main = "Proportion of Race")
+legend("topright", legend = c("white", "black", "asian","aian"), 
+       fill =   c("purple", "violetred1", "cornsilk", "cyan", "white"), title = "Categories", cex = .7)
+```
+
+``` {r}
+library(readr)
+NHIS21_CLEANED_R <- read_csv("NHIS21 CLEANED.R.csv")
+attach(NHIS21_CLEANED_R)
+use_varb <- (age >=18) & (age <84) & (fulltime == 1) 
+data_use <- subset(NHIS21_CLEANED_R,use_varb) 
+
+data_use$industry <- factor((data_use$Agriculture	+ 2*data_use$Construction + 3*data_use$Healthcare + 4*data_use$Manufacturing + 5*data_use$Mining + 6*data_use$Services + 7*data_use$Transportation + 8*data_use$Wholesale  + 9*data_use$Retail
+), 
+levels=c(1,2,3,4,5,6,7,8,9), labels = c("Agriculture","Construction","Healthcare","Manufacturing","Mining","Services","Transportation","Wholesale","Retail"))
+
+table1 <- table(data_use$industry,data_use$paidleave)
+table1
+x=c(table1[1,2]/(table1[1,1]+table1[1,2]),
+    table1[2,2]/(table1[2,1]+table1[2,2]),
+    table1[3,2]/(table1[3,1]+table1[3,2]),
+    table1[4,2]/(table1[4,1]+table1[4,2]),
+    table1[5,2]/(table1[5,1]+table1[5,2]),
+    table1[6,2]/(table1[6,1]+table1[6,2]),
+    table1[7,2]/(table1[7,1]+table1[7,2]),
+    table1[8,2]/(table1[8,1]+table1[8,2]),
+    table1[9,2]/(table1[9,1]+table1[9,2]))
+x
+paidleaveV_prop_table<-data.frame(row.names=row.names(table1),Prop_paidleave=x)
+paidleaveV_prop_table
+require(ggplot2)
+ggplot(data=paidleaveV_prop_table, aes(y=row.names(paidleaveV_prop_table), x=Prop_paidleave, fill=row.names(paidleaveV_prop_table))) + 
+  geom_bar(stat="identity") + scale_fill_brewer(palette = "BuPu") + ggtitle("Proportion of paidleave with industry") + theme(legend.position = "none") + labs( x="paidleave", y="industry")
+
+
+```
+
+``` {r}
+data_use$insurance<- factor((data_use$medicaid + 2*data_use$private+ 3*data_use$uninsured), 
+                        levels=c(1,2,3), labels = c("medicaid","private","uninsured"))
+table3 <- table(data_use$insurance,data_use$medcare)
+table3
+x=c(table3[1,2]/(table3[1,1]+table3[1,2]),
+    table3[2,2]/(table3[2,1]+table3[2,2]),
+    table3[3,2]/(table3[3,1]+table3[3,2]))
+x
+medcareV_prop_table<-data.frame(row.names=row.names(table3), Prop_medcare=x)
+medcareV_prop_table
+require(ggplot2)
+ggplot(data=medcareV_prop_table, aes(y=row.names(medcareV_prop_table), x=Prop_medcare, fill=row.names(medcareV_prop_table))) + 
+  geom_bar(stat="identity") + scale_fill_brewer(palette = "YlGnBu") + ggtitle("Proportion of medcare with insurance") + theme(legend.position = "none") + labs( x="medcare", y="insurance")
+
+```
+
+``` {r}
+
+data_use$Race <- factor((data_use$white + 2*data_use$black + 3*data_use$asian + 4*data_use$aian), 
+levels=c(1,2,3,4), labels = c("white","black","asian","aian"))
+
+table4 <- table(data_use$Race,data_use$doctorvisit)
+table4
+
+x=c(table4[1,2]/(table4[1,1]+table4[1,2]),
+    table4[2,2]/(table4[2,1]+table4[2,2]),
+    table4[3,2]/(table4[3,1]+table4[3,2]),
+    table4[4,2]/(table4[4,1]+table4[4,2]))
+x
+doctorvisitV_prop_table<-data.frame(row.names=row.names(table4), Prop_doctorvisit=x)
+doctorvisitV_prop_table
+require(ggplot2)
+ggplot(data=doctorvisitV_prop_table, aes(y=row.names(doctorvisitV_prop_table), x=Prop_doctorvisit, fill=row.names(doctorvisitV_prop_table))) + 
+  geom_bar(stat="identity") + scale_fill_brewer(palette = "YlOrBr") + ggtitle("Proportion of doctor visit with race") + theme(legend.position = "none") + labs( x="doctorvisit", y="race")
+```
+
+``` {r}
+data_use$maritial <- factor((data_use$single + 2*data_use$widowed + 3*data_use$married + 4*data_use$divorced), 
+                        levels=c(1,2,3,4), labels = c("single","widowed","divorced","married"))
+table5 <- table(data_use$maritial,data_use$problembill)
+table5
+
+x=c(table5[1,2]/(table5[1,1]+table5[1,2]),
+    table5[2,2]/(table5[2,1]+table5[2,2]),
+    table5[3,2]/(table5[3,1]+table5[3,2]),
+    table5[4,2]/(table5[4,1]+table5[4,2]))
+x
+problembillV_prop_table<-data.frame(row.names=row.names(table5), Prop_problembill=x)
+problembillV_prop_table
+require(ggplot2)
+ggplot(data=problembillV_prop_table, aes(y=row.names(problembillV_prop_table), x=Prop_problembill, fill=row.names(problembillV_prop_table))) + 
+  geom_bar(stat="identity") + scale_fill_brewer(palette = "Greens") + ggtitle("Proportion of maritial status and problem bill") + theme(legend.position = "none") + labs( x="problembill", y="maritial status")
+```
+
+``` {r}
+data_use$bodypain <- factor((data_use$backpain + 2*data_use$hipspain + 3*data_use$handpain+ 4*data_use$abdominalpain+5*data_use$toothpain), 
+                            levels=c(1,2,3,4,5),labels = c("backpain","hipspain","abdominalpain","handpain","toothpain"))
+table6 <- table(data_use$bodypain,data_use$somepain)
+table6
+
+x=c(table6[1,2]/(table6[1,1]+table6[1,2]),
+    table6[2,2]/(table6[2,1]+table6[2,2]),
+    table6[3,2]/(table6[3,1]+table6[3,2]),
+    table6[4,2]/(table6[4,1]+table6[4,2]),
+    table6[5,2]/(table6[5,1]+table6[5,2]))
+x
+somepainV_prop_table<-data.frame(row.names=row.names(table6), Prop_somepain=x)
+somepainV_prop_table
+require(ggplot2)
+ggplot(data=somepainV_prop_table, aes(y=row.names(somepainV_prop_table), x=Prop_somepain, fill=row.names(somepainV_prop_table))) + 
+  geom_bar(stat="identity") + scale_fill_brewer(palette = "Reds") + ggtitle("Types of pain with some pain that limits work and life") + theme(legend.position = "none") + labs( x="somepain", y=" type of pain")
+
+
+```
